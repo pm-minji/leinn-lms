@@ -1,12 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
 import { handleApiError } from '@/lib/api/error-handler';
+import { getAuthenticatedUser, hasRole } from '@/lib/auth/user-utils';
 import { NextResponse } from 'next/server';
 import { updateUserRole } from '@/lib/services/user-service';
 import { z } from 'zod';
 
 const roleUpdateSchema = z.object({
   role: z.enum(['learner', 'coach', 'admin'], {
-    errorMap: () => ({ message: '유효한 역할을 선택해주세요' }),
+    message: '유효한 역할을 선택해주세요',
   }),
 });
 
@@ -16,34 +17,17 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, error } = await getAuthenticatedUser();
 
-    if (!user) {
+    if (error || !user) {
       return NextResponse.json(
-        { error: '인증이 필요합니다' },
+        { error: error || '인증이 필요합니다' },
         { status: 401 }
       );
     }
 
-    // Get user role
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { error: '사용자 정보를 찾을 수 없습니다' },
-        { status: 404 }
-      );
-    }
-
     // Only admins can change user roles
-    if (userData.role !== 'admin') {
+    if (!hasRole(user, 'admin')) {
       return NextResponse.json(
         { error: '접근 권한이 없습니다' },
         { status: 403 }
@@ -63,7 +47,7 @@ export async function PATCH(
 
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: '입력 데이터가 올바르지 않습니다', details: validationResult.error.errors },
+        { error: '입력 데이터가 올바르지 않습니다', details: validationResult.error.issues },
         { status: 400 }
       );
     }
@@ -73,6 +57,7 @@ export async function PATCH(
     await updateUserRole(id, role);
 
     // Get updated user data
+    const supabase = await createClient();
     const { data: updatedUser } = await supabase
       .from('users')
       .select('*')

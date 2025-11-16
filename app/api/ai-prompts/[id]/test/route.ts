@@ -5,9 +5,10 @@ import { NextResponse } from 'next/server';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Check authentication
@@ -42,10 +43,10 @@ export async function POST(
     }
 
     // Get the prompt
-    const prompt = await PromptService.getPromptById(params.id);
+    const prompt = await PromptService.getPromptById(id);
 
     // Replace variables in prompt
-    let promptContent = prompt.content;
+    let promptContent = prompt.prompt_text;
     promptContent = promptContent.replace(/{reflection_content}/g, testContent);
     promptContent = promptContent.replace(
       /{learner_name}/g,

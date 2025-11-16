@@ -1,6 +1,7 @@
 'use client';
 
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { TeamInlineEditor } from './TeamInlineEditor';
 import Link from 'next/link';
 
 interface Team {
@@ -101,12 +102,7 @@ export function TeamList({ teams }: TeamListProps) {
                   {new Date(team.created_at).toLocaleDateString('ko-KR')}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                  <Link
-                    href={`/admin/teams/${team.id}`}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    상세보기
-                  </Link>
+                  <TeamInlineEditor team={team} />
                 </td>
               </tr>
             ))}

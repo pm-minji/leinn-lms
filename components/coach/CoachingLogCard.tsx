@@ -47,7 +47,7 @@ export function CoachingLogCard({ log }: CoachingLogCardProps) {
 
   return (
     <Link
-      href={`/coaching-logs/${log.id}`}
+      href={`/coach/coaching-logs/${log.id}`}
       className="block rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
     >
       <div className="flex items-start justify-between">
@@ -58,7 +58,7 @@ export function CoachingLogCard({ log }: CoachingLogCardProps) {
               {sessionTypeLabels[log.session_type] || log.session_type}
             </span>
           </div>
-          <p className="mt-1 text-sm text-gray-500">세션 날짜: {sessionDate}</p>
+          <p className="mt-1 text-sm text-gray-700">세션 날짜: {sessionDate}</p>
         </div>
         <StatusBadge status={log.status === 'open' ? 'submitted' : 'coach_feedback_done'} />
       </div>

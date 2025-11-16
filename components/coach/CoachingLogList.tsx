@@ -47,7 +47,7 @@ export function CoachingLogList({ logs }: CoachingLogListProps) {
           <select
             value={sessionTypeFilter}
             onChange={(e) => setSessionTypeFilter(e.target.value)}
-            className="mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="all">전체</option>
             <option value="1:1">1:1 코칭</option>
@@ -63,7 +63,7 @@ export function CoachingLogList({ logs }: CoachingLogListProps) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="all">전체</option>
             <option value="open">진행 중</option>
@@ -73,14 +73,14 @@ export function CoachingLogList({ logs }: CoachingLogListProps) {
       </div>
 
       {/* Results count */}
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-gray-700">
         {filteredLogs.length}개의 코칭 로그
       </div>
 
       {/* Logs list */}
       {filteredLogs.length === 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
-          <p className="text-gray-500">코칭 로그가 없습니다</p>
+          <p className="text-gray-600">코칭 로그가 없습니다</p>
         </div>
       ) : (
         <div className="grid gap-4">

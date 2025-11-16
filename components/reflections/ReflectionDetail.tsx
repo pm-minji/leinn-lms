@@ -1,6 +1,7 @@
 'use client';
 
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { MarkdownRenderer } from '@/components/ui/MarkdownRenderer';
 import { CoachFeedbackSection } from './CoachFeedbackSection';
 import { Database } from '@/types/supabase';
 
@@ -50,9 +51,7 @@ export function ReflectionDetail({ reflection }: ReflectionDetailProps) {
         <h2 className="mb-4 text-lg font-semibold text-gray-900">
           리플렉션 내용
         </h2>
-        <div className="whitespace-pre-wrap text-gray-700">
-          {reflection.content}
-        </div>
+        <MarkdownRenderer content={reflection.content} />
       </div>
 
       {/* AI feedback is intentionally hidden from learners */}

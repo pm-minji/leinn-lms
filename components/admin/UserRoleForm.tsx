@@ -105,7 +105,7 @@ export function UserRoleForm({
       <FormField label="역할">
         <select
           {...register('role')}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="learner">학습자</option>
           <option value="coach">코치</option>

@@ -4,9 +4,10 @@ import { NextResponse } from 'next/server';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
 
     // Check authentication
@@ -30,7 +31,7 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const prompt = await PromptService.activatePrompt(params.id);
+    const prompt = await PromptService.activatePrompt(id);
 
     return NextResponse.json(prompt);
   } catch (error) {

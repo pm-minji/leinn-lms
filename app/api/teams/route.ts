@@ -1,133 +1,82 @@
-import { createClient } from '@/lib/supabase/server';
-import { handleApiError } from '@/lib/api/error-handler';
-import { getCoachTeams } from '@/lib/services/team-service';
-import { NextResponse } from 'next/server';
-import { teamSchema } from '@/lib/validations/team';
+import { NextRequest, NextResponse } from 'next/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { getAuthenticatedUser, hasRole } from '@/lib/auth/user-utils';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await getAuthenticatedUser();
 
-    if (!user) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다' },
-        { status: 401 }
-      );
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user role
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { error: '사용자 정보를 찾을 수 없습니다' },
-        { status: 404 }
-      );
+    if (!hasRole(user, 'admin') && !hasRole(user, 'coach')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Admins can see all teams, coaches see their assigned teams
-    if (userData.role === 'admin') {
-      const { data: teams, error: teamsError } = await supabase
-        .from('teams')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const adminClient = createAdminClient();
 
-      if (teamsError) {
-        return NextResponse.json(
-          { error: '팀 목록을 불러오는데 실패했습니다' },
-          { status: 500 }
-        );
-      }
+    const { data: teams, error } = await adminClient
+      .from('teams')
+      .select('id, name, description, active, created_at')
+      .order('name');
 
-      return NextResponse.json(teams);
+    if (error) {
+      return NextResponse.json({ error: 'Failed to fetch teams' }, { status: 500 });
     }
 
-    // Only coaches and admins can access this endpoint
-    if (userData.role !== 'coach' && userData.role !== 'admin') {
-      return NextResponse.json(
-        { error: '접근 권한이 없습니다' },
-        { status: 403 }
-      );
-    }
+    return NextResponse.json({ teams });
 
-    const teams = await getCoachTeams(user.id);
-
-    return NextResponse.json(teams);
   } catch (error) {
-    return handleApiError(error);
+    console.error('Error fetching teams:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await getAuthenticatedUser();
 
-    if (!user) {
-      return NextResponse.json(
-        { error: '인증이 필요합니다' },
-        { status: 401 }
-      );
+    console.log('Team creation auth check:', { user, authError });
+
+    if (authError || !user) {
+      console.log('Auth failed:', authError);
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user role
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (userError || !userData) {
-      return NextResponse.json(
-        { error: '사용자 정보를 찾을 수 없습니다' },
-        { status: 404 }
-      );
+    if (!hasRole(user, 'admin')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Only admins can create teams
-    if (userData.role !== 'admin') {
-      return NextResponse.json(
-        { error: '접근 권한이 없습니다' },
-        { status: 403 }
-      );
+    const { name, description, active = true } = await request.json();
+
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: 'Team name is required' }, { status: 400 });
     }
 
-    const body = await request.json();
-    const validationResult = teamSchema.safeParse(body);
+    const adminClient = createAdminClient();
 
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: '입력 데이터가 올바르지 않습니다', details: validationResult.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const { name, active } = validationResult.data;
-
-    const { data: team, error: insertError } = await supabase
+    const { data: team, error } = await adminClient
       .from('teams')
-      .insert({ name, active })
+      .insert({
+        name: name.trim(),
+        active
+      })
       .select()
       .single();
 
-    if (insertError) {
-      return NextResponse.json(
-        { error: '팀 생성에 실패했습니다' },
-        { status: 500 }
-      );
+    if (error) {
+      console.error('Database error creating team:', error);
+      return NextResponse.json({ 
+        error: 'Failed to create team', 
+        details: error.message 
+      }, { status: 500 });
     }
 
-    return NextResponse.json(team, { status: 201 });
+    return NextResponse.json({ team });
+
   } catch (error) {
-    return handleApiError(error);
+    console.error('Error creating team:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

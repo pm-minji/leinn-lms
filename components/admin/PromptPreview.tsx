@@ -13,7 +13,7 @@ interface PromptPreviewProps {
 
 export function PromptPreview({ content, variables }: PromptPreviewProps) {
   const replaceVariables = (text: string) => {
-    if (!variables) return text;
+    if (!text || !variables) return text || '';
 
     let result = text;
     if (variables.reflection_content) {
@@ -28,7 +28,7 @@ export function PromptPreview({ content, variables }: PromptPreviewProps) {
     return result;
   };
 
-  const previewContent = replaceVariables(content);
+  const previewContent = replaceVariables(content || '');
 
   return (
     <Card>

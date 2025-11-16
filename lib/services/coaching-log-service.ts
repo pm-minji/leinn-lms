@@ -1,7 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { hasRole } from '@/lib/auth/user-utils';
 import { ApiError } from '@/lib/api/error-handler';
 import { logError, logInfo } from '@/lib/utils/logger';
 import { CoachingLogFormData } from '@/lib/validations/coaching-log';
+import type { Database } from '@/types/supabase';
+
+type SessionType = Database['public']['Tables']['coaching_logs']['Row']['session_type'];
+type CoachingLogStatus = Database['public']['Tables']['coaching_logs']['Row']['status'];
 
 export async function createCoachingLog(
   userId: string,
@@ -9,8 +15,9 @@ export async function createCoachingLog(
 ) {
   const supabase = await createClient();
 
-  // Get user role
-  const { data: userData, error: userError } = await supabase
+  // Get user role using admin client
+  const adminClient = createAdminClient();
+  const { data: userData, error: userError } = await adminClient
     .from('users')
     .select('role')
     .eq('id', userId)
@@ -20,7 +27,7 @@ export async function createCoachingLog(
     throw new ApiError(404, '사용자 정보를 찾을 수 없습니다');
   }
 
-  if (userData.role !== 'coach' && userData.role !== 'admin') {
+  if (!hasRole({ id: userId, email: '', role: userData.role }, 'coach')) {
     throw new ApiError(403, '코치만 코칭 로그를 작성할 수 있습니다');
   }
 
@@ -35,56 +42,28 @@ export async function createCoachingLog(
     throw new ApiError(404, '코치 정보를 찾을 수 없습니다');
   }
 
-  // Verify coach has access to the team (skip for admin)
-  if (userData.role === 'coach' && data.team_id) {
-    const { data: coachTeam, error: coachTeamError } = await supabase
-      .from('coach_teams')
-      .select('id')
-      .eq('coach_id', coach.id)
-      .eq('team_id', data.team_id)
-      .single();
+  // 단순화된 접근: 코치는 자유롭게 코칭 로그를 작성할 수 있음
+  // 학습자 이름과 팀 이름은 텍스트로 저장되므로 별도 검증 불필요
 
-    if (coachTeamError || !coachTeam) {
-      throw new ApiError(403, '담당 팀에 대해서만 코칭 로그를 작성할 수 있습니다');
-    }
+  // Create coaching log - 학습자/팀 이름을 메모에 포함
+  let notesWithContext = data.notes;
+  if (data.learner_name || data.team_name) {
+    const contextInfo = [];
+    if (data.learner_name) contextInfo.push(`학습자: ${data.learner_name}`);
+    if (data.team_name) contextInfo.push(`팀: ${data.team_name}`);
+    notesWithContext = `${contextInfo.join(', ')}\n\n${data.notes}`;
   }
 
-  // If learner_id is provided, verify it belongs to the coach's team
-  if (userData.role === 'coach' && data.learner_id) {
-    const { data: learner, error: learnerError } = await supabase
-      .from('learners')
-      .select('team_id')
-      .eq('id', data.learner_id)
-      .single();
-
-    if (learnerError || !learner) {
-      throw new ApiError(404, '학습자를 찾을 수 없습니다');
-    }
-
-    // Verify coach has access to learner's team
-    const { data: coachTeam, error: coachTeamError } = await supabase
-      .from('coach_teams')
-      .select('id')
-      .eq('coach_id', coach.id)
-      .eq('team_id', learner.team_id)
-      .single();
-
-    if (coachTeamError || !coachTeam) {
-      throw new ApiError(403, '담당 팀의 학습자에 대해서만 코칭 로그를 작성할 수 있습니다');
-    }
-  }
-
-  // Create coaching log
   const { data: coachingLog, error: createError } = await supabase
     .from('coaching_logs')
     .insert({
       coach_id: coach.id,
-      learner_id: data.learner_id || null,
-      team_id: data.team_id || null,
+      learner_id: null, // 더 이상 필수가 아님
+      team_id: null,    // 더 이상 필수가 아님
       title: data.title,
       session_date: data.session_date,
-      session_type: data.session_type,
-      notes: data.notes,
+      session_type: '1:1', // 기본값 설정
+      notes: notesWithContext,
       next_actions: data.next_actions || null,
       follow_up_date: data.follow_up_date || null,
       status: data.status || 'open',
@@ -93,32 +72,33 @@ export async function createCoachingLog(
     .single();
 
   if (createError) {
+    console.error('Failed to create coaching log:', createError);
     logError('Failed to create coaching log', createError as Error, {
       coachId: coach.id,
-      sessionType: data.session_type,
     });
-    throw new ApiError(500, '코칭 로그 저장에 실패했습니다');
+    throw new ApiError(500, `코칭 로그 저장에 실패했습니다: ${createError.message}`);
   }
 
   logInfo('Coaching log created successfully', {
     coachingLogId: coachingLog.id,
     coachId: coach.id,
-    sessionType: data.session_type,
+    sessionType: coachingLog.session_type,
   });
 
   return coachingLog;
 }
 
 export async function getCoachingLogs(userId: string, filters?: {
-  session_type?: string;
-  status?: string;
+  session_type?: SessionType;
+  status?: CoachingLogStatus;
   team_id?: string;
   learner_id?: string;
 }) {
   const supabase = await createClient();
 
-  // Get user role
-  const { data: userData, error: userError } = await supabase
+  // Get user role using admin client
+  const adminClient = createAdminClient();
+  const { data: userData, error: userError } = await adminClient
     .from('users')
     .select('role')
     .eq('id', userId)
@@ -128,7 +108,7 @@ export async function getCoachingLogs(userId: string, filters?: {
     throw new ApiError(404, '사용자 정보를 찾을 수 없습니다');
   }
 
-  if (userData.role !== 'coach' && userData.role !== 'admin') {
+  if (!hasRole({ id: userId, email: '', role: userData.role }, 'coach')) {
     throw new ApiError(403, '코치만 코칭 로그를 조회할 수 있습니다');
   }
 
@@ -192,8 +172,9 @@ export async function getCoachingLogs(userId: string, filters?: {
 export async function getCoachingLogById(userId: string, logId: string) {
   const supabase = await createClient();
 
-  // Get user role
-  const { data: userData, error: userError } = await supabase
+  // Get user role using admin client
+  const adminClient = createAdminClient();
+  const { data: userData, error: userError } = await adminClient
     .from('users')
     .select('role')
     .eq('id', userId)
@@ -203,7 +184,7 @@ export async function getCoachingLogById(userId: string, logId: string) {
     throw new ApiError(404, '사용자 정보를 찾을 수 없습니다');
   }
 
-  if (userData.role !== 'coach' && userData.role !== 'admin') {
+  if (!hasRole({ id: userId, email: '', role: userData.role }, 'coach')) {
     throw new ApiError(403, '코치만 코칭 로그를 조회할 수 있습니다');
   }
 

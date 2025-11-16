@@ -48,7 +48,7 @@ export async function PATCH(
 
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: '입력 데이터가 올바르지 않습니다', details: validationResult.error.errors },
+        { error: '입력 데이터가 올바르지 않습니다', details: validationResult.error.issues },
         { status: 400 }
       );
     }

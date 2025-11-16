@@ -30,6 +30,7 @@ export function CoachFeedbackForm({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<CoachFeedbackFormData>({
     resolver: zodResolver(coachFeedbackSchema),
@@ -37,6 +38,36 @@ export function CoachFeedbackForm({
       coach_feedback: reflection.coach_feedback || '',
     },
   });
+
+  const generateTemplate = () => {
+    const aiSummary = reflection.ai_summary || '';
+    const aiRisks = reflection.ai_risks || '';
+    const aiActions = reflection.ai_actions || '';
+    
+    const template = `📊 이번 주 하이라이트
+${learnerName}님의 이번 주 리플렉션에서 가장 인상 깊었던 부분을 작성해주세요.
+${aiSummary ? `\n💡 AI 분석: ${aiSummary}` : ''}
+
+💪 발견한 강점
+- 
+- 
+- 
+
+🔍 성장 기회
+더 발전시킬 수 있는 영역을 건설적으로 제시해주세요.
+${aiRisks ? `\n⚠️ 주의사항: ${aiRisks}` : ''}
+
+📋 다음 주 액션 아이템
+1. 우선순위 1: 
+2. 우선순위 2: 
+3. 실험해볼 것: 
+${aiActions ? `\n💡 AI 제안: ${aiActions}` : ''}
+
+💬 코치의 한마디
+개인적이고 따뜻한 메시지로 마무리해주세요.`;
+    
+    setValue('coach_feedback', template);
+  };
 
   const onSubmit = async (data: CoachFeedbackFormData) => {
     setIsSubmitting(true);
@@ -105,9 +136,23 @@ export function CoachFeedbackForm({
       {/* Coach Feedback Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
-          <h3 className="mb-4 text-lg font-semibold text-blue-900">
-            코치 피드백 작성
-          </h3>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-blue-900">
+              코치 피드백 작성
+            </h3>
+            <button
+              type="button"
+              onClick={generateTemplate}
+              className="rounded-md bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700 hover:bg-blue-200"
+            >
+              📝 템플릿 사용
+            </button>
+          </div>
+
+          <div className="mb-4 rounded-md bg-blue-50 p-3 text-sm text-blue-700">
+            💡 <strong>템플릿 사용 팁:</strong> "템플릿 사용" 버튼을 클릭하면 구조화된 피드백 양식이 생성됩니다. 
+            AI 분석 결과가 자동으로 포함되어 더 효과적인 피드백을 작성할 수 있습니다.
+          </div>
 
           <FormField
             label="피드백"
@@ -116,8 +161,8 @@ export function CoachFeedbackForm({
           >
             <textarea
               {...register('coach_feedback')}
-              rows={8}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              rows={16}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="학습자에게 전달할 피드백을 작성해주세요. AI 분석 결과를 참고하여 구체적이고 실행 가능한 조언을 제공하세요."
             />
           </FormField>

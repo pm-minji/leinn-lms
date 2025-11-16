@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { hasRole } from '@/lib/auth/user-utils';
 import { ApiError } from '@/lib/api/error-handler';
 import { logError, logInfo } from '@/lib/utils/logger';
 import { CoachFeedbackFormData } from '@/lib/validations/coach-feedback';
@@ -10,8 +12,9 @@ export async function saveCoachFeedback(
 ) {
   const supabase = await createClient();
 
-  // Get user role
-  const { data: userData, error: userError } = await supabase
+  // Get user role using admin client
+  const adminClient = createAdminClient();
+  const { data: userData, error: userError } = await adminClient
     .from('users')
     .select('role')
     .eq('id', userId)
@@ -21,7 +24,7 @@ export async function saveCoachFeedback(
     throw new ApiError(404, '사용자 정보를 찾을 수 없습니다');
   }
 
-  if (userData.role !== 'coach' && userData.role !== 'admin') {
+  if (!hasRole({ id: userId, email: '', role: userData.role }, 'coach')) {
     throw new ApiError(403, '코치만 피드백을 작성할 수 있습니다');
   }
 
@@ -49,11 +52,16 @@ export async function saveCoachFeedback(
 
   // Verify coach has access to this team (skip for admin)
   if (userData.role === 'coach') {
+    const teamId = reflection.team_id;
+    if (!teamId) {
+      throw new ApiError(400, '팀 정보가 없는 리플렉션입니다');
+    }
+
     const { data: coachTeam, error: coachTeamError } = await supabase
       .from('coach_teams')
       .select('id')
       .eq('coach_id', coach.id)
-      .eq('team_id', reflection.team_id)
+      .eq('team_id', teamId)
       .single();
 
     if (coachTeamError || !coachTeam) {

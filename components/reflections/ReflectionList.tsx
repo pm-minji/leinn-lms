@@ -49,7 +49,7 @@ export function ReflectionList() {
   if (reflections.length === 0) {
     return (
       <div className="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
-        <p className="text-gray-500">아직 작성한 리플렉션이 없습니다</p>
+        <p className="text-gray-600">아직 작성한 리플렉션이 없습니다</p>
       </div>
     );
   }

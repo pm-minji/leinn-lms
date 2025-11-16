@@ -73,7 +73,7 @@ export function TeamForm({ team }: TeamFormProps) {
         <input
           type="text"
           {...register('name')}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="팀 이름을 입력하세요"
         />
       </FormField>

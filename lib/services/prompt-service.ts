@@ -9,7 +9,7 @@ export class PromptService {
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from('ai_prompts')
+      .from('ai_prompt_templates')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -27,7 +27,7 @@ export class PromptService {
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from('ai_prompts')
+      .from('ai_prompt_templates')
       .select('*')
       .eq('is_active', true)
       .single();
@@ -47,7 +47,7 @@ export class PromptService {
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from('ai_prompts')
+      .from('ai_prompt_templates')
       .select('*')
       .eq('id', id)
       .single();
@@ -66,12 +66,11 @@ export class PromptService {
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from('ai_prompts')
+      .from('ai_prompt_templates')
       .insert({
         name: input.name,
         description: input.description,
-        content: input.content,
-        version: input.version || '1.0',
+        prompt_text: input.content,
         is_active: false,
       })
       .select()
@@ -91,12 +90,11 @@ export class PromptService {
     const supabase = await createClient();
 
     const { data, error } = await supabase
-      .from('ai_prompts')
+      .from('ai_prompt_templates')
       .update({
         name: input.name,
         description: input.description,
-        content: input.content,
-        version: input.version,
+        prompt_text: input.content,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
@@ -118,7 +116,7 @@ export class PromptService {
 
     // Check if prompt is active
     const { data: prompt } = await supabase
-      .from('ai_prompts')
+      .from('ai_prompt_templates')
       .select('is_active')
       .eq('id', id)
       .single();
@@ -127,7 +125,7 @@ export class PromptService {
       throw new Error('Cannot delete active prompt');
     }
 
-    const { error } = await supabase.from('ai_prompts').delete().eq('id', id);
+    const { error } = await supabase.from('ai_prompt_templates').delete().eq('id', id);
 
     if (error) {
       throw new Error(`Failed to delete prompt: ${error.message}`);
@@ -144,7 +142,7 @@ export class PromptService {
 
     // Start transaction: deactivate all prompts
     const { error: deactivateError } = await supabase
-      .from('ai_prompts')
+      .from('ai_prompt_templates')
       .update({ is_active: false })
       .neq('id', '00000000-0000-0000-0000-000000000000'); // Update all
 
@@ -154,7 +152,7 @@ export class PromptService {
 
     // Activate the selected prompt
     const { data, error } = await supabase
-      .from('ai_prompts')
+      .from('ai_prompt_templates')
       .update({ is_active: true, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()

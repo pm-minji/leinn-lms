@@ -5,4 +5,4 @@ export const teamSchema = z.object({
   active: z.boolean().default(true),
 });
 
-export type TeamFormData = z.infer<typeof teamSchema>;
+export type TeamFormData = z.input<typeof teamSchema>;

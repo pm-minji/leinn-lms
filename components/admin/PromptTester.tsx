@@ -80,7 +80,7 @@ export function PromptTester({ promptId }: PromptTesterProps) {
               id="learnerName"
               value={learnerName}
               onChange={(e) => setLearnerName(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
             />
           </div>
 
@@ -96,7 +96,7 @@ export function PromptTester({ promptId }: PromptTesterProps) {
               id="teamName"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
             />
           </div>
 
@@ -112,7 +112,7 @@ export function PromptTester({ promptId }: PromptTesterProps) {
               value={testContent}
               onChange={(e) => setTestContent(e.target.value)}
               rows={8}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
               placeholder="테스트할 리플렉션 내용을 입력하세요..."
             />
           </div>

@@ -79,7 +79,7 @@ export function LearnerTeamAssignment({
       <FormField label="팀 배정" error={errors.team_id?.message}>
         <select
           {...register('team_id')}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">팀 없음</option>
           {activeTeams.map((team) => (

@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function updateUserRole(
   userId: string,
   newRole: 'learner' | 'coach' | 'admin'
 ) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Get current user data
   const { data: currentUser, error: userError } = await supabase

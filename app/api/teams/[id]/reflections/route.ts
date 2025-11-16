@@ -4,9 +4,10 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const {
       data: { user },
@@ -57,7 +58,7 @@ export async function GET(
         .from('coach_teams')
         .select('id')
         .eq('coach_id', coach.id)
-        .eq('team_id', params.id)
+        .eq('team_id', id)
         .single();
 
       if (!coachTeam) {
@@ -84,7 +85,7 @@ export async function GET(
         )
       `
       )
-      .eq('team_id', params.id)
+      .eq('team_id', id)
       .order('created_at', { ascending: false });
 
     if (reflectionsError) {

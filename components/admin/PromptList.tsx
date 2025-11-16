@@ -8,7 +8,7 @@ interface Prompt {
   id: string;
   name: string;
   description: string;
-  version: string;
+  prompt_text: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -49,7 +49,9 @@ export function PromptList({ prompts, onActivate, onDelete }: PromptListProps) {
                   {prompt.name}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">{prompt.description}</p>
-                <p className="mt-1 text-xs text-gray-400">버전: {prompt.version}</p>
+                <p className="mt-1 text-xs text-gray-400">
+                  생성일: {new Date(prompt.created_at).toLocaleDateString('ko-KR')}
+                </p>
               </div>
               <StatusBadge
                 status={prompt.is_active ? 'active' : 'inactive'}
@@ -98,7 +100,7 @@ export function PromptList({ prompts, onActivate, onDelete }: PromptListProps) {
                 설명
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                버전
+                생성일
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 상태
@@ -120,7 +122,7 @@ export function PromptList({ prompts, onActivate, onDelete }: PromptListProps) {
                   <div className="text-sm text-gray-500">{prompt.description}</div>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                  {prompt.version}
+                  {new Date(prompt.created_at).toLocaleDateString('ko-KR')}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4">
                   <StatusBadge

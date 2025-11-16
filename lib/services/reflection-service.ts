@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { ReflectionFormData } from '@/lib/validations/reflection';
 import { ApiError } from '@/lib/api/error-handler';
 import { logError, logInfo } from '@/lib/utils/logger';
@@ -143,8 +144,9 @@ export async function getReflectionByIdForCoach(
 ) {
   const supabase = await createClient();
 
-  // Get user role
-  const { data: userData, error: userError } = await supabase
+  // Get user role using admin client
+  const adminClient = createAdminClient();
+  const { data: userData, error: userError } = await adminClient
     .from('users')
     .select('role')
     .eq('id', userId)
@@ -190,11 +192,16 @@ export async function getReflectionByIdForCoach(
       throw new ApiError(404, '코치 정보를 찾을 수 없습니다');
     }
 
+    const learnerTeamId = reflection.learners.team_id;
+    if (!learnerTeamId) {
+      throw new ApiError(403, '팀 정보가 없는 리플렉션입니다');
+    }
+
     const { data: coachTeam } = await supabase
       .from('coach_teams')
       .select('id')
       .eq('coach_id', coach.id)
-      .eq('team_id', reflection.learners.team_id)
+      .eq('team_id', learnerTeamId)
       .single();
 
     if (!coachTeam) {

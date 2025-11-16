@@ -25,7 +25,7 @@ export function ReflectionCard({ reflection }: ReflectionCardProps) {
           <h3 className="text-base font-semibold text-gray-900 sm:text-lg">
             {reflection.title}
           </h3>
-          <p className="mt-1 text-xs text-gray-500 sm:text-sm">{date}</p>
+          <p className="mt-1 text-xs text-gray-600 sm:text-sm">{date}</p>
         </div>
         <StatusBadge status={reflection.status} />
       </div>

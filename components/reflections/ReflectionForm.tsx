@@ -1,6 +1,7 @@
 'use client';
 
 import { FormField } from '@/components/ui/FormField';
+import { NotionStyleEditor } from '@/components/ui/NotionStyleEditor';
 import {
   reflectionSchema,
   ReflectionFormData,
@@ -8,7 +9,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 
 export function ReflectionForm() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export function ReflectionForm() {
     handleSubmit,
     formState: { errors },
     watch,
+    control,
   } = useForm<ReflectionFormData>({
     resolver: zodResolver(reflectionSchema),
   });
@@ -44,7 +46,7 @@ export function ReflectionForm() {
         throw new Error(errorData.error || '리플렉션 제출에 실패했습니다');
       }
 
-      router.push('/reflections');
+      router.push('/learner/reflections');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다');
@@ -65,7 +67,7 @@ export function ReflectionForm() {
         <input
           type="text"
           {...register('title')}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-500 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="이번 주 리플렉션 제목을 입력하세요"
         />
       </FormField>
@@ -74,19 +76,25 @@ export function ReflectionForm() {
         <input
           type="date"
           {...register('week_start')}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 [color-scheme:light] [&::-webkit-calendar-picker-indicator]:opacity-100"
         />
       </FormField>
 
-      <FormField label="리플렉션 내용" error={errors.content?.message} required>
-        <textarea
-          {...register('content')}
-          rows={12}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="이번 주 학습 내용, 어려움, 인사이트 등을 자유롭게 작성하세요 (최소 100자)"
+      <FormField label="리플렉션 내용 (실시간 마크다운)" error={errors.content?.message} required>
+        <Controller
+          name="content"
+          control={control}
+          render={({ field }) => (
+            <NotionStyleEditor
+              value={field.value || ''}
+              onChange={field.onChange}
+              placeholder="이번 주 학습 내용, 어려움, 인사이트 등을 자유롭게 작성하세요 (최소 100자)"
+              height={500}
+            />
+          )}
         />
         <p className="mt-1 text-sm text-gray-500">
-          {contentLength} / 100자 이상
+          {contentLength} / 100자 이상 • 왼쪽에서 작성하면 오른쪽에서 실시간 미리보기가 표시됩니다
         </p>
       </FormField>
 

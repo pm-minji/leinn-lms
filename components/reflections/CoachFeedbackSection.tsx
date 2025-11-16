@@ -1,6 +1,7 @@
 'use client';
 
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { MarkdownRenderer } from '@/components/ui/MarkdownRenderer';
 
 interface CoachFeedbackSectionProps {
   coachFeedback: string | null;
@@ -18,9 +19,7 @@ export function CoachFeedbackSection({
           <h2 className="text-lg font-semibold text-blue-900">코치 피드백</h2>
           <StatusBadge status={status} />
         </div>
-        <div className="whitespace-pre-wrap text-blue-800">
-          {coachFeedback}
-        </div>
+        <MarkdownRenderer content={coachFeedback} className="text-blue-800" />
       </div>
     );
   }

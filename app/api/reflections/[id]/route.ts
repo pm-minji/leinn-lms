@@ -8,9 +8,10 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const {
       data: { user },
@@ -32,12 +33,12 @@ export async function GET(
 
     // If coach or admin, use coach access (includes AI feedback)
     if (userData?.role === 'coach' || userData?.role === 'admin') {
-      const reflection = await getReflectionByIdForCoach(user.id, params.id);
+      const reflection = await getReflectionByIdForCoach(user.id, id);
       return NextResponse.json(reflection);
     }
 
     // Otherwise, use learner access (excludes AI feedback)
-    const reflection = await getReflectionById(user.id, params.id);
+    const reflection = await getReflectionById(user.id, id);
     return NextResponse.json(reflection);
   } catch (error) {
     return handleApiError(error);

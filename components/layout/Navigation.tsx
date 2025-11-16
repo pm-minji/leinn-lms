@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/lib/auth/hooks';
 import { UserRole } from '@/types/auth';
+import { UserProfileMenu } from './UserProfileMenu';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -47,31 +48,38 @@ export function Navigation() {
         : 'border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800'
     }`;
 
-  const learnerLinks = [
-    { href: '/dashboard', label: '대시보드' },
-    { href: '/reflections', label: '리플렉션' },
-  ];
+  // Unified navigation based on role
+  const getNavigationLinks = (role: UserRole) => {
+    if (role === 'learner') {
+      return [
+        { href: '/learner/profile', label: '마이페이지' },
+        { href: '/learner/reflections', label: '내 리플렉션' },
+      ];
+    }
 
-  const coachLinks = [
-    { href: '/dashboard', label: '대시보드' },
-    { href: '/teams', label: '팀 관리' },
-    { href: '/reflections', label: '리플렉션' },
-    { href: '/coaching-logs', label: '코칭 로그' },
-  ];
+    if (role === 'coach') {
+      return [
+        { href: '/admin/dashboard', label: '대시보드' },
+        { href: '/admin/reflections', label: '리플렉션 관리' },
+        { href: '/coach/coaching-logs', label: '코칭 로그' },
+      ];
+    }
 
-  const adminLinks = [
-    { href: '/teams', label: '팀 관리' },
-    { href: '/users', label: '사용자 관리' },
-    { href: '/learners', label: '학습자 관리' },
-    { href: '/coaches', label: '코치 관리' },
-  ];
+    if (role === 'admin') {
+      return [
+        { href: '/admin/dashboard', label: '대시보드' },
+        { href: '/admin/teams', label: '팀 관리' },
+        { href: '/admin/users', label: '사용자 관리' },
+        { href: '/admin/reflections', label: '리플렉션 관리' },
+        { href: '/coach/coaching-logs', label: '코칭 로그' },
+        { href: '/admin/ai-prompts', label: 'AI 프롬프트' },
+      ];
+    }
 
-  const links =
-    userRole === 'learner'
-      ? learnerLinks
-      : userRole === 'coach'
-        ? coachLinks
-        : adminLinks;
+    return [];
+  };
+
+  const links = getNavigationLinks(userRole);
 
   return (
     <nav className="border-b border-gray-200 bg-white">
@@ -79,7 +87,7 @@ export function Navigation() {
         <div className="flex h-16 justify-between">
           <div className="flex">
             <div className="flex flex-shrink-0 items-center">
-              <Link href="/dashboard" className="text-xl font-bold text-blue-600">
+              <Link href="/" className="text-xl font-bold text-blue-600">
                 LEINN LMS
               </Link>
             </div>
@@ -95,9 +103,7 @@ export function Navigation() {
           <div className="flex items-center">
             {/* User info */}
             <div className="hidden sm:block">
-              <span className="mr-4 text-sm text-gray-700">
-                {user.email}
-              </span>
+              <UserProfileMenu user={user} />
             </div>
             {/* Sign out button */}
             <button
@@ -109,7 +115,7 @@ export function Navigation() {
             {/* Mobile menu button */}
             <button
               type="button"
-              className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 sm:hidden"
+              className="inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-700 sm:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
             >
