@@ -6,7 +6,7 @@ export async function POST() {
   await supabase.auth.signOut();
 
   // 로그아웃 후 홈페이지로 리다이렉션
-  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'));
+  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'));
 }
 
 export async function GET() {
@@ -15,5 +15,5 @@ export async function GET() {
   await supabase.auth.signOut();
 
   // 로그아웃 후 홈페이지로 리다이렉션
-  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'));
+  return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'));
 }
