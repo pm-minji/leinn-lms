@@ -52,15 +52,16 @@ export function Navigation() {
   const getNavigationLinks = (role: UserRole) => {
     if (role === 'learner') {
       return [
-        { href: '/learner/profile', label: '마이페이지' },
+        { href: '/learner/dashboard', label: '대시보드' },
         { href: '/learner/reflections', label: '내 리플렉션' },
+        { href: '/learner/profile', label: '마이페이지' },
       ];
     }
 
     if (role === 'coach') {
       return [
-        { href: '/admin/dashboard', label: '대시보드' },
-        { href: '/admin/reflections', label: '리플렉션 관리' },
+        { href: '/coach/dashboard', label: '대시보드' },
+        { href: '/coach/reflections', label: '리플렉션 관리' },
         { href: '/coach/coaching-logs', label: '코칭 로그' },
       ];
     }
