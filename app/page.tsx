@@ -45,9 +45,9 @@ export default async function Home() {
             if (existingUser.role === "admin") {
               redirect("/admin/dashboard");
             } else if (existingUser.role === "coach") {
-              redirect("/admin/dashboard");
+              redirect("/coach/dashboard");
             } else {
-              redirect("/learner/profile");
+              redirect("/learner/dashboard");
             }
           } else {
             // Critical error: cannot create or fetch user
@@ -111,9 +111,9 @@ export default async function Home() {
     if (userData?.role === "admin") {
       redirect("/admin/dashboard");
     } else if (userData?.role === "coach") {
-      redirect("/admin/dashboard");
+      redirect("/coach/dashboard");
     } else if (userData?.role === "learner") {
-      redirect("/learner/profile");
+      redirect("/learner/dashboard");
     }
   }
 

@@ -42,7 +42,8 @@ export function EmailSignInForm() {
 
         if (signInError) throw signInError;
 
-        router.push('/dashboard');
+        // 역할에 따라 적절한 대시보드로 리다이렉트
+        window.location.href = '/';
         router.refresh();
       }
     } catch (err) {
