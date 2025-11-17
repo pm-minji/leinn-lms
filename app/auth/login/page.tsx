@@ -1,4 +1,5 @@
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { EmailSignInForm } from '@/components/auth/EmailSignInForm';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
@@ -39,7 +40,18 @@ export default async function LoginPage() {
             팀 기반 창업 교육 플랫폼
           </p>
         </div>
-        <div className="mt-8">
+        <div className="mt-8 space-y-6">
+          <EmailSignInForm />
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-2 text-gray-500">또는</span>
+            </div>
+          </div>
+
           <GoogleSignInButton />
         </div>
       </div>
